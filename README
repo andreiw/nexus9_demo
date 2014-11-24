@@ -93,6 +93,9 @@ Bye!
 Where to go from here
 =====================
 
+"nexus9_dts" is the decompiled "nexus9_dtb". "nexus9_dtb" was
+extracted from the Android boot.img.
+
 - https://android.googlesource.com/kernel/tegra/+/android-tegra-3.10/
 - https://developer.nvidia.com/tegra-k1-technical-reference-manual
 
