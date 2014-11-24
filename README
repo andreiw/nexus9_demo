@@ -1,0 +1,120 @@
+64-bit ARM OS/Kernel/Systems Development on a Nexus 9
+=====================================================
+
+The Nexus 9 is based on a 64-bit nVidia K1 chip. At the
+moment it is the most affordable (price wise) and
+accessible (unit-wise) platform for exploring
+OS work on an AArch64 platform.
+
+The Nexus 9 allows performing an unlock via
+"fastboot oem unlock", allowing custom Android images
+to be booted.
+
+What this is
+=============
+
+This is a small demo, demonstrating how to build
+and boot arbitrary code on your Nexus 9 and do some
+basic I/O.
+
+The demo demonstrates serial I/O and draws two black
+diagonal lines on the framebuffer (see demo_pic.jpg).
+
+What you need - required
+========================
+
+* A Nexus 9, unlocked. Search Youtube for walkthroughs.
+* GNU Make.
+* An AArch64 GNU toolchain.
+* ADB/Fastboot tools.
+* Bootimg tools (https://github.com/pbatard/bootimg-tools),
+  built and somewhere in your path.
+
+What you need - optional
+========================
+
+* A headset<->RS232 adapter. I've used a cable I've had
+  from the Motorola Xoom project (the first...errr, Nexus,
+  before the devices got called a "Nexus"). You can try
+  http://www.accuvant.com/blog/building-a-nexus-4-uart-debug-cable
+
+How it works
+============
+
+HBOOT, the Nexus bootloader, expects images to be in a certain
+format. The booted kernel/code must:
+
+* Be 64-bit
+* Be binary (not ELF)
+* Be linked at 0x80080000
+* Be compressed using "gzip"
+* Be followed by the binary FDT
+* Be contained in an "ANDROID!" boot image.
+
+- The link address appears to be hardcoded in HBOOT. The Android boot
+  image bases and the AArch64 kernel header fields appear to be ignored.
+- The boot image can contain an additional ramdisk/initrd/payload.
+- The FDT is patched by HBOOT to contain correct linux,initrd-start
+  and linux,initrd-end addresses.
+
+How to build
+============
+
+$ CROSS_COMPILE=aarch64-linux-gnu- make
+
+... should yield 'nexus9_demo'.
+
+How to boot
+===========
+
+* Connect your Android tablet via a USB cable.
+
+* (optional) Connect the UART headphone jack adapter to your computer.
+
+  ...start Minicom with 115200 baud 8-n-1.
+
+* $ adb reboot-bootloader
+
+  ...you should now see the HBOOT splash screen and menu.
+
+* $ fastboot boot nexus9_demo
+
+  ...the code will upload. You will see some output in Minicom from the booted
+  code and will see drawn black lines on the framebuffer.
+
+Actual output of the demo
+=========================
+
+Hello!
+CurrentEL = 0000000000000001
+SCTLR_EL1 = 0000000010C5083A
+Bye!
+
+Where to go from here
+=====================
+
+- https://android.googlesource.com/kernel/tegra/+/android-tegra-3.10/
+- https://developer.nvidia.com/tegra-k1-technical-reference-manual
+
+Final thoughts
+==============
+
+From studying the "Trusty" disassembly and Tegra K1 TRM, the K1
+should have virtualization support (i.e. EL2). However, the HTC
+firmware does not allow booting an EL2-enabled OS. All kernels
+are booted in EL1. This is rather unfortunate and prevents playing
+around with KVM and Xen on this platform. Perhaps there some problems
+with EL2 support. Or perhaps HTC/nVidia/Google were too myopic to
+allow EL2 access.
+
+It's unclear if the "oem unlock" allows reflashing custom unsigned firmware.
+"nvtboot" seems to enforce signed "Trusted OS" payloads, at least from
+dumping the strings.
+
+The boot flow looks something like this:
+* "nvtboot" (32-bit) runs on the AVP/COP.
+* "nvtboot" loads "tos" (64-bit) (Trusty aka Secure OS) on the AArch64 chip.
+* "tos" loads HBOOT (32-bit).
+* HBOOT loads Android and implements the fastboot protocol.
+
+It's unclear how to enter NVFlash/APX mode, or how helpful that would be.
