@@ -106,7 +106,7 @@ From studying the "Trusty" disassembly and Tegra K1 TRM, the K1
 should have virtualization support (i.e. EL2). However, the HTC
 firmware does not allow booting an EL2-enabled OS. All kernels
 are booted in EL1. This is rather unfortunate and prevents playing
-around with KVM and Xen on this platform. Perhaps there some problems
+around with KVM and Xen on this platform. Perhaps there are some problems
 with EL2 support. Or perhaps HTC/nVidia/Google were too myopic to
 allow EL2 access.
 
