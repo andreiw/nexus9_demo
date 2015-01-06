@@ -10,7 +10,7 @@ CFLAGS = \
 	-mlittle-endian \
 	-fno-stack-protector \
 	-mgeneral-regs-only \
-	-mstrict-align
+	-mstrict-align \
 	-fno-common \
 	-fno-builtin \
 	-ffreestanding \
